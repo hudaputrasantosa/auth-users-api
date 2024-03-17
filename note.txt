@@ -1,0 +1,4 @@
+# start postgres server with cmd
+pg_ctl -D "C:\Program Files\PostgreSQL\16\data" start
+pg_ctl -D "C:\Program Files\PostgreSQL\16\data" stop
+pg_ctl -D "C:\Program Files\PostgreSQL\16\data" restart
