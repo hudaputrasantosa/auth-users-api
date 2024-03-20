@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/hudaputrasantosa/auth-users-api/config"
-	"github.com/hudaputrasantosa/auth-users-api/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -39,7 +38,6 @@ func Connect() {
 
 	log.Println("success to connect db")
 	logger.Default.LogMode(logger.Info)
-	db.AutoMigrate(&model.User{})
 
 	DB = Dbinstance{
 		Db: db,
