@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hudaputrasantosa/auth-users-api/database"
 	"github.com/hudaputrasantosa/auth-users-api/model"
@@ -16,6 +17,15 @@ func CreateUser(c *fiber.Ctx) error {
 			"status":  "err",
 			"message": "error user input",
 			"data":    err,
+		})
+	}
+
+	validate := validator.New()
+	errValidate := validate.Struct(user)
+	if errValidate != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "failed to validate",
+			"error":   errValidate.Error(),
 		})
 	}
 
