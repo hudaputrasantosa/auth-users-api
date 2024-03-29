@@ -3,6 +3,8 @@ package handler
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+
+	"github.com/google/uuid"
 	"github.com/hudaputrasantosa/auth-users-api/database"
 	"github.com/hudaputrasantosa/auth-users-api/model"
 )
@@ -10,6 +12,7 @@ import (
 func CreateUser(c *fiber.Ctx) error {
 	db := database.DB.Db
 	user := new(model.User)
+	user.ID = uuid.New()
 
 	err := c.BodyParser(user)
 	if err != nil {
