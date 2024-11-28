@@ -1,0 +1,23 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Marketplace of voucher game API.",
+        "title": "Marketplace API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "http://127.0.0.1:8080",
+    "basePath": "/api",
+    "paths": {},
+    "securityDefinitions": {
+        "JWT": {
+            "description": "JWT security accessToken. Please add it in the format \"Bearer {AccessToken}\" to authorize your requests.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

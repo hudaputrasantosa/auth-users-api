@@ -1,0 +1,18 @@
+basePath: /api
+host: http://127.0.0.1:8080
+info:
+  contact: {}
+  description: Marketplace of voucher game API.
+  title: Marketplace API
+  version: "1.0"
+paths: {}
+schemes:
+- http
+securityDefinitions:
+  JWT:
+    description: JWT security accessToken. Please add it in the format "Bearer {AccessToken}"
+      to authorize your requests.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

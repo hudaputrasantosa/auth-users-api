@@ -1,8 +1,82 @@
+# docker compose
+- docker-compose up -d
+- docker-compose -f docker-compose.yaml --env-file .env up -d
+- docker inspect auth-users-api-postgres-1
+- docker compose stop
+- docker compose down
+
+# golan run project
+- go run main.go / air
+
 # start postgres server with cmd
 pg_ctl -D "C:\Program Files\PostgreSQL\16\data" start
 pg_ctl -D "C:\Program Files\PostgreSQL\16\data" stop
 pg_ctl -D "C:\Program Files\PostgreSQL\16\data" restart
 
-# Kurang
-- unique column and can insert duplicate value like email
-- uncomplete handler
+#task
+# MEMBER ROLE
+- entitas auth
+ 1. setup jwt token
+ 2. register and login struct
+ 3. handler login and register
+ 4. validation of register and login
+ 5. routing untuk register dan login
+ 6. middleware register dan login
+ 7. dokumentasi untuk endpoint authentication
+
+- entitas order
+ 1. membuat order model
+ 2. membuat struct untuk create order
+ 3. membuat handle order dengan  db transaction dan integration payment gateway
+ 4. membuat validation order
+ 5. middleware order product
+ 5. dokumentasi untuk endpoint order
+
+# ADMIN ROLE
+- buat entititas product :
+ 1. buat model product (atribut...)
+ 2. buat struct userCreate and userUpdate
+ 3. buat handler product (CRUD)
+ 4. buat routing untuk product
+ 5. validation untuk handler product
+ 6. middleware product (authrorizedMiddleware, dll..)
+ 7. dokumentasi untuk endpoint product
+
+ - buat entititas user management :
+ 1. buat model product (atribut...)
+ 2. buat struct userCreate and userUpdate
+ 3. buat handler product (CRUD)
+ 4. buat routing untuk product
+ 5. validation untuk handler product
+ 6. middleware product (authrorizedMiddleware, dll..)
+ 7. dokumentasi untuk endpoint product
+
+# referensi
+https://github.com/anshjamwal15/gopher-rest
+https://codevoweb.com/create-crud-api-in-golang-using-fiber-and-gorm/
+https://dev.to/koddr/build-a-restful-api-on-go-fiber-postgresql-jwt-and-swagger-docs-in-isolated-docker-containers-475j
+https://blog.devtrovert.com/p/swagger-in-go-why-its-the-genius
+https://github.com/koddr/tutorial-go-fiber-rest-api
+https://firatkomurcu.medium.com/swaggo-with-fiber-in-golang-4dec7ea74629
+https://github.com/swaggo/swag
+
+	fmt.Println("Password match:", isPassword)
+
+// Swagger
+//
+//	@title						Marketplace API
+//	@version					1.0
+//	@description				Marketplace of voucher game API.
+//	@termsOfService				http://petmanagement.com/terms
+//	@contact.name				API Support Team
+//	@contact.url				http://petmanagement.com/support
+//	@contact.email				support@petmanagement.com
+//	@license.name				Apache 2.0
+//	@license.url				http://www.apache.org/licenses/LICENSE-2.0.html
+//	@host						petmanagement.com
+//	@BasePath					/api/v1
+//	@schemes					http https
+//	@securityDefinitions.apiKey	JWT
+//	@in							header
+//	@name						Authorization
+//	@description				JWT security accessToken. Please add it in the format "Bearer {AccessToken}" to authorize your requests.

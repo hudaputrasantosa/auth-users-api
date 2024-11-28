@@ -1,0 +1,32 @@
+version: '3.5'
+
+services:
+  postgres:
+    image: postgres:alpine
+    container_name: db-app
+    ports:
+     - "5432:5432"
+    networks:
+      - postgres
+    volumes:
+     - ./postgresdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD={DB_PASSWORD}
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: db-admin-app
+    ports:
+      - "5433:80"
+    networks:
+      - postgres
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${POSTGRES_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${POSTGRES_PASSWORD}
+
+volumes:
+  postgresdata:
+
+networks:
+  postgres:
