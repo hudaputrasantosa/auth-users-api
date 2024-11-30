@@ -2,14 +2,14 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	_ "github.com/lib/pq"
 
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database"
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database/migration"
 	"github.com/hudaputrasantosa/auth-users-api/internal/interface/http/routes"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/middleware"
-
-	_ "github.com/lib/pq"
+	"github.com/hudaputrasantosa/auth-users-api/internal/config"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/server"
 )
 
 func main() {
@@ -23,8 +23,11 @@ func main() {
 	middleware.FiberMiddleware(app)
 	// Main router
 	routes.SetupRoutes(app)
-
-	logger.Info("Server Running ..")
-	// Start server on port 8080
-	app.Listen(":8080")
+	// Start server
+	appEnv := config.Config("APP_ENV")
+	if appEnv == "development" || appEnv == "staging" {
+		server.StartServer(app)
+	} else {
+		server.StartServerWithGracefulShutdown(app)
+	}
 }
