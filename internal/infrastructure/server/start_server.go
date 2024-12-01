@@ -2,7 +2,7 @@ package server
 
 import (
 	"log"
-	"fmt"
+	// "fmt"
 	"os"
 	"os/signal"
 
@@ -13,11 +13,10 @@ import (
 // StartServer func for starting a simple server.
 func StartServer(a *fiber.App) {
 	// Build Fiber connection URL.
-	fiberConnURL, _ := connection.ConnectionURLBuilder("fiber")
-	fiberListen := fmt.Sprintf(":%s",fiberConnURL)
+	fiberConnectURL, _ := connection.ConnectionURLBuilder("fiber")
 
 	// Run server.
-	if err := a.Listen(fiberListen); err != nil {
+	if err := a.Listen(fiberConnectURL); err != nil {
 		log.Printf("Oops... Server is not running! Reason: %v", err)
 	}
 }

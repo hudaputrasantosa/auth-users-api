@@ -45,8 +45,8 @@ func ConnectionURLBuilder(name string) (string, error) {
 	case "fiber":
 		// URL for Fiber connection.
 		url = fmt.Sprintf(
-			"%s",
-			// config.Config("SERVER_HOST"),
+			"%s:%s",
+			config.Config("SERVER_HOST"),
 			config.Config("SERVER_PORT"),
 		)
 	default:

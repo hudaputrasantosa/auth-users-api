@@ -9,7 +9,7 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/internal/interface/http/routes"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/middleware"
 	"github.com/hudaputrasantosa/auth-users-api/internal/config"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/server"
+	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/server"
 )
 
 func main() {
