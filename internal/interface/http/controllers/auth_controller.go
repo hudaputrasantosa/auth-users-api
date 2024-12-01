@@ -9,13 +9,20 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/internal/domain/entity"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/hash"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/token"
 )
 
 func ValidateUser(c *fiber.Ctx) error {
+	// DB connection
 	db := database.DB.Db
+
+	// Create or initial login struct payload
 	var payload *dto.ValidateUserSchema;
+
+	// Create user model to store data
 	var user *entity.User
 
+	// Check received data from JSON body.
 	if err := c.BodyParser(&payload); err != nil {
 		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
 	}
@@ -42,7 +49,11 @@ func ValidateUser(c *fiber.Ctx) error {
 		return response.ErrorMessage(c, fiber.StatusBadRequest, "User not active, Please to verification. check your email", nil)
 	}
 
-	// generate token jwt
+	// generate new access token and refresh token jwt
+	userToken, err := token.GenerateNewToken(user.ID.String())
+	if err!= nil {
+        return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to generate token", err)
+    }
 
-	return response.SuccessMessage(c, fiber.StatusOK, "Success login")
+	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success login", userToken)
 }
