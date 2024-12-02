@@ -12,6 +12,12 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/token"
 )
 
+type UserTokenResponse struct {
+    Role        entity.Role
+    AccessToken string
+    RefreshToken string
+}
+
 func ValidateUser(c *fiber.Ctx) error {
 	// DB connection
 	db := database.DB.Db
@@ -51,9 +57,53 @@ func ValidateUser(c *fiber.Ctx) error {
 
 	// generate new access token and refresh token jwt
 	userToken, err := token.GenerateNewToken(user.ID.String())
-	if err!= nil {
+    if err!= nil {
         return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to generate token", err)
     }
 
-	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success login", userToken)
+    res := UserTokenResponse{
+        Role:        user.Role,
+        AccessToken: userToken.AccessToken,
+        RefreshToken: userToken.RefreshToken,
+    }
+
+	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success login", res)
+}
+
+func RegisterUser(c *fiber.Ctx) error {
+	// DB connection
+    db := database.DB.Db
+
+    // Create or initial user struct payload
+    var payload *dto.RegisterUserSchema;
+
+    // Create user model to store data
+    var user *entity.User
+
+    // Check received data from JSON body.
+    if err := c.BodyParser(&payload); err!= nil {
+        return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+    }
+
+	// check email validation
+
+    // check email existing
+    userResult := db.First(&user, "email =?", payload.Email)
+    if userResult.Error == nil {
+        return response.ErrorMessage(c, fiber.StatusConflict, "Email already registered", nil)
+    }
+
+	// if admin role, get header secret key for create admin user
+
+    // hash password
+    hashedPassword, err := hash.HashPassword(payload.Password)
+	if err!= nil {
+        return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to hash password", err)
+    }
+
+	// generate otp token from jwt
+
+	// sent otp to active email that registered
+
+	// return success with token otp
 }
