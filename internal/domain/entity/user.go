@@ -7,6 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type Role string
+
+const (
+  Admin     Role = "admin"
+  Member    Role = "member"
+)
+
 type User struct {
 	gorm.Model
 	ID        uuid.UUID      `json:"id" gorm:"type:uuid;"`
@@ -16,6 +23,7 @@ type User struct {
 	Password  string         `json:"password,omitempty" gorm:"not null"`
 	Phone     string         `json:"phone,omitempty" gorm:"not null"`
 	IsActive  bool           `json:"is_active" gorm:"not null;default:false"`
+	Role      Role         	`json:"role,omitempty" gorm:"enum('admin', 'member');default:member"`
 	Token     string         `json:"token"`
 	Otp       string         `json:"otp"`
 	CreatedAt time.Time      `json:"created_at,omitempty"`
