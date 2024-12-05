@@ -2,13 +2,10 @@ package controllers
 
 import (
 	"time"
-	// "fmt"
-	// "strconv"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"github.com/google/uuid"
 	"github.com/morkid/paginate"
-	"github.com/go-playground/validator/v10"
 
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database"
 	"github.com/hudaputrasantosa/auth-users-api/internal/interface/http/dto"
@@ -27,27 +24,8 @@ func CreateUser(c *fiber.Ctx) error {
 		return response.ErrorMessage(c, fiber.StatusBadRequest, err.Error(), err)
 	}
 
-
-	if err := validation.ValidateStruct(payload); err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			switch err.Field() {
-			case "Email":
-				if err.Tag() == "email" {
-					return response.ErrorMessage(c, fiber.StatusBadRequest, "Invalid email format", err)
-				}
-				return response.ErrorMessage(c, fiber.StatusBadRequest, "Email is required", err)
-			case "Username":
-				return response.ErrorMessage(c, fiber.StatusBadRequest, "Username is required", err)
-			case "Password":
-				return response.ErrorMessage(c, fiber.StatusBadRequest, "Password is required", err)
-			case "Name":
-				return response.ErrorMessage(c, fiber.StatusBadRequest, "Name is required", err)
-			case "Phone":
-				return response.ErrorMessage(c, fiber.StatusBadRequest, "Phone is required", err)
-			default:
-				return response.ErrorMessage(c, fiber.StatusBadRequest,"", err)
-			}
-		}
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
 
 	now := time.Now();

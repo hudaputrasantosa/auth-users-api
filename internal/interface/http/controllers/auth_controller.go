@@ -10,6 +10,7 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/hash"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/token"
+    "github.com/hudaputrasantosa/auth-users-api/pkg/helper/validation"
 )
 
 type UserTokenResponse struct {
@@ -31,6 +32,11 @@ func ValidateUser(c *fiber.Ctx) error {
 	// Check received data from JSON body.
 	if err := c.BodyParser(&payload); err != nil {
 		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+	}
+
+    // Validate data before proceessing.
+    	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
 
 	// check email exist
