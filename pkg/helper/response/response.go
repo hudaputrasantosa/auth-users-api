@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/validation"
+
 )
 
 type Response struct {
@@ -53,6 +55,16 @@ func ErrorMessage(c *fiber.Ctx, statusCode int, message string, err error) error
 
 	if err != nil {
 		response.ErrorDetails =  fmt.Sprintf("%v", err)
+	}
+
+	return c.Status(statusCode).JSON(response)
+}
+
+func ErrorValidationMessage(c *fiber.Ctx, statusCode int, dataValidation []*validation.ErrorResponse) error {
+	response := &Response{
+		Error:  true,
+		Message: "Validation Error",
+		Data:  dataValidation,
 	}
 
 	return c.Status(statusCode).JSON(response)
