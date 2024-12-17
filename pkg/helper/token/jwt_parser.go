@@ -49,7 +49,7 @@ func ExtractTokenMetadata(c *fiber.Ctx) (*TokenMetadata, error) {
 func verifyToken(c *fiber.Ctx) (*jwt.Token, error) {
 	tokenString := extractToken(c)
 
-	token, err := jwt.Parse(tokenString, jwtKeyFunc)
+	token, err := jwt.Parse(tokenString, JwtKeyFunc)
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +70,8 @@ func extractToken(c *fiber.Ctx) string {
 	return ""
 }
 
-func jwtKeyFunc(token *jwt.Token) (interface{}, error) {
-	return []byte(config.Config("JWT_SECRET_KEY")), nil
+func JwtKeyFunc(token *jwt.Token) (interface{}, error) {
+	return []byte(config.Config("JWT_SECRET")), nil
 }
 
 // ParseRefreshToken func for parse second argument from refresh token.

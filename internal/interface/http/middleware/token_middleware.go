@@ -23,7 +23,7 @@ func JWTProtected() func(*fiber.Ctx) error {
 
 func jwtError(c *fiber.Ctx, err error) error {
 	// Return status 401 and failed authentication error.
-	if err.Error() == "Missing or malformed JWT" {
+	if err.Error() == "Unauthorized or expired credentials" {
 		return response.ErrorMessage(c, fiber.StatusBadRequest, err.Error(), nil)
 	}
 
