@@ -1,11 +1,11 @@
 package token
 
 import (
-    "strconv"
-    "crypto/sha256"
-    "fmt"
-    "encoding/hex"
-    "time"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -19,9 +19,9 @@ type Token struct {
 }
 
 // GenerateNewTokens func for generate a new Access & Refresh tokens.
-func GenerateNewToken(id string) (*Token, error) {
+func GenerateNewToken(id string, role string) (*Token, error) {
 	// Generate JWT Access token.
-	accessToken, err := generateNewAccessToken(id)
+	accessToken, err := generateNewAccessToken(id, role)
 	if err != nil {
 		// Return token generation error.
 		return nil, err
@@ -41,26 +41,27 @@ func GenerateNewToken(id string) (*Token, error) {
 }
 
 // private func for generate a new Access token.
-func generateNewAccessToken(userID string) (string, error) {
-    // Set expires minutes count for secret key from .env file.
-    minutesCount, err := strconv.Atoi(config.Config("JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT"))
+func generateNewAccessToken(userID string, role string) (string, error) {
+	// Set expires minutes count for secret key from .env file.
+	minutesCount, err := strconv.Atoi(config.Config("JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT"))
 
-    // Create a new claims to JWT.
-    claims := jwt.MapClaims{
-        "id": userID,
-        "exp": time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix(),
-    }
+	// Create a new claims to JWT.
+	claims := jwt.MapClaims{
+		"id":   userID,
+		"role": role,
+		"exp":  time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix(),
+	}
 
-    // Create a new JWT access token with claims.
+	// Create a new JWT access token with claims.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-    // Generate token.
-    tokenResult, err := token.SignedString([]byte(config.Config("JWT_SECRET")))
-    if err != nil {
-    return "", err
-    }
+	// Generate token.
+	tokenResult, err := token.SignedString([]byte(config.Config("JWT_SECRET")))
+	if err != nil {
+		return "", err
+	}
 
- return tokenResult, nil
+	return tokenResult, nil
 }
 
 // private func for generate a new refresh access token.
