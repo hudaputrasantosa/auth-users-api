@@ -4,6 +4,7 @@ import (
 	"context"
 
 	model "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
+	"go.uber.org/zap"
 
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 )
@@ -45,7 +46,7 @@ func (repo *repositoryUser) Save(ctx context.Context, payload *model.User) (*mod
 	tx := repo.db.WithContext(ctx).Model(&payload)
 
 	if err := tx.Save(&payload).Error; err != nil {
-		logger.Error(err.Error())
+		logger.Error("error insert", zap.Error(err))
 		return nil, err
 	}
 
@@ -56,8 +57,7 @@ func (repo *repositoryUser) Update(ctx context.Context, payload *model.User) (*m
 	tx := repo.db.WithContext(ctx).Model(&payload)
 
 	if err := tx.Save(&payload).Error; err != nil {
-		logger.Error(err.Error())
-		// custom error message
+		logger.Error("error update", zap.Error(err))
 		return nil, err
 	}
 
@@ -68,8 +68,7 @@ func (repo *repositoryUser) Delete(ctx context.Context, id string, user *model.U
 	tx := repo.db.WithContext(ctx).Model(&user)
 
 	if err := tx.Delete(&user).Error; err != nil {
-		logger.Error(err.Error())
-		// custom error message
+		logger.Error("error delete", zap.Error(err))
 		return err
 	}
 

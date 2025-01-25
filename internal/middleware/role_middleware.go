@@ -11,14 +11,14 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
 )
 
-func IsAdmin(service service.UserService) fiber.Handler {
+func IsAdmin(userService service.UserService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		userId := c.Locals("user")
 		// find user and get role
-		user, err := service.FindByID(ctx, userId.(string))
+		user, status, err := userService.FindByID(ctx, userId.(string))
 		if err != nil || user == nil {
-			return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to find user", err)
+			return response.ErrorMessage(c, status, "Failed to find user", err)
 		}
 		//check and throw if role not admin
 		if user.Role != model.Admin {

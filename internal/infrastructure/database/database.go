@@ -3,13 +3,13 @@ package database
 import (
 	"os"
 
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
-	"go.uber.org/zap"
 
-	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/connection"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 )
 
 type Dbinstance struct {

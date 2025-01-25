@@ -5,10 +5,15 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gofiber/fiber/v2"
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
+	"github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/utils"
 	model "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
+	globalUtils "github.com/hudaputrasantosa/auth-users-api/internal/utils"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/hash"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/token"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -18,28 +23,27 @@ type UserTokenResponse struct {
 	RefreshToken string
 }
 
-func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, error) {
+func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error) {
 	// Create user model to store data
 	var user *model.User
 
-	// check email exist // change to service
+	// check email exist
 	user, err := s.userRepository.FindByEmail(ctx, payload.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			// give a log err with message "Email not found or not registered"
-			return nil, errors.New("email or password is wrong")
-			// return response.ErrorMessage(c, fiber.StatusNotFound, "Email not found or not registered", err)
+			logger.Error("email not found or not registered")
+			return nil, fiber.StatusNotFound, utils.FailedUserLogin
 		}
-		return nil, err
-		// return response.ErrorMessage(c, fiber.StatusBadGateway, err.Error(), err)
+
+		logger.Error(err.Error())
+		return nil, fiber.StatusInternalServerError, err
 	}
 
 	//chack password
 	isPassword := hash.CheckPasswordHash(payload.Password, user.Password)
 	if !isPassword {
-		// give a log err with message "Email or password is wrong"
-		return nil, errors.New("email or password is wrong")
-		// return response.ErrorMessage(c, fiber.StatusBadRequest, "Password is wrong", nil)
+		logger.Error("password is not match")
+		return nil, fiber.StatusConflict, utils.FailedUserLogin
 	}
 
 	// check status user
@@ -47,17 +51,15 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 		// send email service to verification [PLAN]
 		fmt.Println("Sent email to verification")
 
-		// give a log err with message "User not active, Please to verification. check your email"
-		return nil, errors.New("please to verification email")
-		// return response.ErrorMessage(c, fiber.StatusBadRequest, "User not active, Please to verification. check your email", nil)
+		logger.Error("User not active, Please to verification. check your email")
+		return nil, fiber.StatusBadRequest, errors.New("please to verification email")
 	}
 
 	// generate new access token and refresh token jwt
 	userToken, err := token.GenerateNewToken(user.ID.String(), string(user.Role))
 	if err != nil {
-		// global error
-		return nil, errors.New("ops! Something went wrong")
-		// return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to generate token", err)
+		logger.Error("failed generate token", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, globalUtils.ErrorGlobalPublicMessage
 	}
 
 	res := &UserTokenResponse{
@@ -66,32 +68,25 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 		RefreshToken: userToken.RefreshToken,
 	}
 
-	return res, err
+	return res, fiber.StatusOK, err
 }
 
-func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUserSchema) (interface{}, error) {
+func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUserSchema) (interface{}, int, error) {
 	// check email existing
-	userResult, err := s.userRepository.FindByEmail(ctx, payload.Email)
+	user, err := s.userRepository.FindByEmail(ctx, payload.Email)
 	if err != nil {
-		err := errors.New("error, can't process register")
-		return nil, err
-		// return response.ErrorMessage(c, fiber.StatusConflict, "Email already registered", nil)
-	} else if userResult != nil {
-		// give a log error
-		// Email already registered
-		err := errors.New("error, can't process register")
-		return nil, err
+		logger.Error("Error register", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, utils.ErrorUserRegister
+	} else if user != nil {
+		return nil, fiber.StatusConflict, utils.FailedUserRegister
 	}
 
 	// if admin role, get header secret key for create admin user
 
 	res, err := s.authRepository.Register(ctx, &payload)
 	if err != nil {
-		// give a log error
-		// Failed to create user
-		err := errors.New("error, can't process register")
-		return nil, err
-		// return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to create user", err)
+		logger.Error("Error register", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, utils.ErrorUserRegister
 	}
 
 	// generate otp token from jwt
@@ -99,6 +94,5 @@ func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUser
 	// sent otp to active email that registered
 
 	// return success with token otp
-	return res, nil
-	// return response.SuccessMessageWithData(c, fiber.StatusOK, "Success Register", user)
+	return res, fiber.StatusCreated, nil
 }

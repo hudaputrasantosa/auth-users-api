@@ -47,12 +47,12 @@ func (h *handleAuth) validateUser(c *fiber.Ctx) error {
 		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
 
-	res, err := h.authClient.ValidateUser(ctx, payload)
+	res, status, err := h.authClient.ValidateUser(ctx, payload)
 	if err != nil {
-		return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed", err)
+		return response.ErrorMessage(c, status, "Failed login", err)
 	}
 
-	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success login", res)
+	return response.SuccessMessageWithData(c, status, "Success login", res)
 }
 
 func (h *handleAuth) registerUser(c *fiber.Ctx) error {
@@ -71,11 +71,11 @@ func (h *handleAuth) registerUser(c *fiber.Ctx) error {
 		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
 
-	res, err := h.authClient.RegisterUser(ctx, payload)
+	res, status, err := h.authClient.RegisterUser(ctx, payload)
 	if err != nil {
-		return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed to create user", err)
+		return response.ErrorMessage(c, status, "Failed register", err)
 	}
 
 	// return success with token otp
-	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success Register", res)
+	return response.SuccessMessageWithData(c, status, "Success Register", res)
 }

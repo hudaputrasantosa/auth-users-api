@@ -51,12 +51,12 @@ func (h *handleUser) createUser(c *fiber.Ctx) error {
 		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
 
-	res, err := h.userClient.Save(ctx, payload)
+	res, status, err := h.userClient.Save(ctx, payload)
 	if err != nil {
-		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed create user input", err)
+		return response.ErrorMessage(c, status, "Failed create user", err)
 	}
 
-	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success created", res)
+	return response.SuccessMessageWithData(c, status, "Success created", res)
 }
 
 func (h *handleUser) findUsersPagination(c *fiber.Ctx) error {
@@ -73,9 +73,9 @@ func (h *handleUser) findUsersPagination(c *fiber.Ctx) error {
 func (h *handleUser) findUsers(c *fiber.Ctx) error {
 	ctx := c.Context()
 
-	res, err := h.userClient.Finds(ctx)
+	res, status, err := h.userClient.Finds(ctx)
 	if err != nil {
-		return response.ErrorMessage(c, fiber.StatusBadRequest, "User data notfound", nil)
+		return response.ErrorMessage(c, status, "Data not found", nil)
 	}
 
 	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success get users data", res)
@@ -85,22 +85,22 @@ func (h *handleUser) findUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
 	userId := c.Params("id")
 
-	res, err := h.userClient.FindByID(ctx, userId)
+	res, status, err := h.userClient.FindByID(ctx, userId)
 	if err != nil {
-		return response.ErrorMessage(c, fiber.StatusInternalServerError, "Error", err)
+		return response.ErrorMessage(c, status, "Data not found", err)
 	}
 
-	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success get users data", res)
+	return response.SuccessMessageWithData(c, status, "Success get users data", res)
 }
 
 func (h *handleUser) deleteUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
 	userId := c.Params("id")
 
-	err := h.userClient.Delete(ctx, userId)
+	status, err := h.userClient.Delete(ctx, userId)
 	if err != nil {
-		return response.ErrorMessage(c, fiber.StatusInternalServerError, "Error", err)
+		return response.ErrorMessage(c, status, "Failed delete", err)
 	}
 
-	return response.SuccessMessage(c, fiber.StatusOK, "Success delete users data")
+	return response.SuccessMessage(c, status, "Success delete")
 }
