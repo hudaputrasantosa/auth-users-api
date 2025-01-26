@@ -7,7 +7,7 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/internal/config"
 	"github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/hash"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/hash"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 )
 

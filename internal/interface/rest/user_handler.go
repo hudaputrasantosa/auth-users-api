@@ -9,8 +9,8 @@ import (
 	service "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/services"
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database"
 	"github.com/hudaputrasantosa/auth-users-api/internal/middleware"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/validation"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/validation"
 )
 
 type handleUser struct {

@@ -8,7 +8,7 @@ import (
 	model "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
 	service "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/services"
 
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
 )
 
 func IsAdmin(userService service.UserService) fiber.Handler {

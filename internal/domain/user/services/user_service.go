@@ -10,7 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/hash"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/hash"
 
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/dtos"
 	model "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"

@@ -10,9 +10,9 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/utils"
 	model "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
 	globalUtils "github.com/hudaputrasantosa/auth-users-api/internal/utils"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/hash"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/token"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/hash"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/token"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

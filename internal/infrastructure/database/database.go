@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/connection"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/connection"
 )
 
 type Dbinstance struct {

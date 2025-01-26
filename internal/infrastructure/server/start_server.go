@@ -7,7 +7,7 @@ import (
 	"os/signal"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/connection"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/connection"
 )
 
 // StartServer func for starting a simple server.

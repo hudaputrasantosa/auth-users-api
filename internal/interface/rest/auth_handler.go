@@ -6,8 +6,8 @@ import (
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
 	authService "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/services"
 
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/validation"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/validation"
 )
 
 type handleAuth struct {

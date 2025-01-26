@@ -7,8 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/response"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/helper/token"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/token"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
 )
 
 func Authorized() fiber.Handler {
