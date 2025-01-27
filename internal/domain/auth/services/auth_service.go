@@ -3,15 +3,17 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
 	"github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/utils"
 	model "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
 	globalUtils "github.com/hudaputrasantosa/auth-users-api/internal/utils"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/hash"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/notification"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/token"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -21,6 +23,12 @@ type UserTokenResponse struct {
 	Role         model.Role
 	AccessToken  string
 	RefreshToken string
+}
+
+type UserRegisterResponse struct {
+	Email   string
+	Token   string
+	Expired string
 }
 
 func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error) {
@@ -49,7 +57,13 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 	// check status user
 	if !user.IsActive {
 		// send email service to verification [PLAN]
-		fmt.Println("Sent email to verification")
+		_, err = notification.MailersendNotification(&notification.RecipientInformation{
+			Email: user.Email,
+			Name:  user.Name,
+		})
+		if err != nil {
+			logger.Error("Failed send notification")
+		}
 
 		logger.Error("User not active, Please to verification. check your email")
 		return nil, fiber.StatusBadRequest, errors.New("please to verification email")
@@ -75,15 +89,35 @@ func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUser
 	// check email existing
 	user, err := s.userRepository.FindByEmail(ctx, payload.Email)
 	if err != nil {
-		logger.Error("Error register", zap.Error(err))
-		return nil, fiber.StatusInternalServerError, utils.ErrorUserRegister
+		if err != gorm.ErrRecordNotFound {
+			logger.Error("Error register", zap.Error(err))
+			return nil, fiber.StatusInternalServerError, utils.ErrorUserRegister
+		}
 	} else if user != nil {
 		return nil, fiber.StatusConflict, utils.FailedUserRegister
 	}
 
 	// if admin role, get header secret key for create admin user
+	now := time.Now()
 
-	res, err := s.authRepository.Register(ctx, &payload)
+	hashPassword, err := hash.HashPassword(payload.Password)
+	if err != nil {
+		logger.Error("Error, failed to hash password", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, utils.ErrorUserRegister
+	}
+
+	createUser := model.User{
+		ID:        uuid.New(),
+		Name:      payload.Name,
+		Username:  payload.Username,
+		Email:     payload.Email,
+		Password:  hashPassword,
+		Phone:     payload.Phone,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	user, err = s.authRepository.Register(ctx, createUser)
 	if err != nil {
 		logger.Error("Error register", zap.Error(err))
 		return nil, fiber.StatusInternalServerError, utils.ErrorUserRegister
@@ -91,7 +125,21 @@ func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUser
 
 	// generate otp token from jwt
 	// otpToken, err := token.GenerateNewToken(user.Email)
+
 	// sent otp to active email that registered
+	_, err = notification.MailersendNotification(&notification.RecipientInformation{
+		Email: user.Email,
+		Name:  user.Name,
+	})
+	if err != nil {
+		logger.Error("Failed send notification")
+	}
+
+	res := &UserRegisterResponse{
+		Email:   user.Email,
+		Token:   "token-dummy",
+		Expired: "5minutes",
+	}
 
 	// return success with token otp
 	return res, fiber.StatusCreated, nil

@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 
-	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
+	"github.com/hudaputrasantosa/auth-users-api/internal/domain/user/models"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +16,7 @@ func NewAuthRepository(db *gorm.DB) *repositoryAuth {
 }
 
 type AuthRepository interface {
-	Register(ctx context.Context, payload *dto.RegisterUserSchema) (interface{}, error)
+	Register(ctx context.Context, payload models.User) (*models.User, error)
 	// Verification(ctx context.Context, id string) (*model.User, error)
 	// ResendVerification(ctx context.Context, email string) (*model.User, error)
 	// ForgotPassword(ctx context.Context, payload *model.User) (*model.User, error)

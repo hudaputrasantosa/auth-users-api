@@ -34,7 +34,7 @@ func (repo *repositoryUser) FindByID(ctx context.Context, id string) (*model.Use
 func (repo *repositoryUser) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user *model.User
 
-	err := repo.db.WithContext(ctx).First(&user, "email = ?", email).Error
+	err := repo.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
