@@ -6,17 +6,17 @@ import (
 
 	"github.com/hudaputrasantosa/auth-users-api/internal/config"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/templates"
 	mailersend "github.com/mailersend/mailersend-go"
 	"go.uber.org/zap"
 )
 
 type RecipientInformation struct {
-	Name            string
-	Email           string
-	MessageTemplate string
+	Name  string
+	Email string
 }
 
-func MailersendNotification(recipient *RecipientInformation) (any, error) {
+func MailersendNotification(recipient *RecipientInformation, data *templates.DataBodyInformation) (any, error) {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -37,25 +37,20 @@ func MailersendNotification(recipient *RecipientInformation) (any, error) {
 		},
 	}
 
-	// attachment : []mailersend.Attachment{
-	// 	{
-	// 		Content: "",
-	// 		Filename: "",
-	// 	},
-	// }
-
 	clientMailerSend := mailersend.NewMailersend(key)
-	subject := "Test email"
-	text := "This is the plain text version of the email."
-	html := "<h1>Hello {{name}},</h1><p>Thanks for register! this is OTP 12345</p>"
+	template, err := templates.ParseFile(data)
+	if err != nil {
+		logger.Error("Failed to parse template", zap.Error(err))
+		return nil, err
+	}
 
+	// text := "This is the plain text version of the email."
 	message := clientMailerSend.Email.NewMessage()
 	message.SetFrom(from)
 	message.SetRecipients(recipients)
-	message.SetSubject(subject)
-	message.SetHTML(html)
-	message.SetText(text)
-	// message.Attachments(attachment)
+	message.SetSubject(template.Subject)
+	message.SetHTML(template.Body)
+	// message.SetText(text)
 
 	res, err := clientMailerSend.Email.Send(ctx, message)
 	if err != nil {

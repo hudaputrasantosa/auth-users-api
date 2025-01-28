@@ -15,6 +15,7 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/notification"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/token"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/templates"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -56,10 +57,16 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 
 	// check status user
 	if !user.IsActive {
-		// send email service to verification [PLAN]
+		// send email service to verification
+		// otpToken, err := token.GenerateNewToken(user.Email)
+		otpToken := "12345"
 		_, err = notification.MailersendNotification(&notification.RecipientInformation{
 			Email: user.Email,
 			Name:  user.Name,
+		}, &templates.DataBodyInformation{
+			Name:            user.Name,
+			Otp:             otpToken,
+			MessageTemplate: templates.Otp_template,
 		})
 		if err != nil {
 			logger.Error("Failed send notification")
@@ -125,11 +132,16 @@ func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUser
 
 	// generate otp token from jwt
 	// otpToken, err := token.GenerateNewToken(user.Email)
+	otpToken := "12345"
 
 	// sent otp to active email that registered
 	_, err = notification.MailersendNotification(&notification.RecipientInformation{
 		Email: user.Email,
 		Name:  user.Name,
+	}, &templates.DataBodyInformation{
+		Name:            user.Name,
+		Otp:             otpToken,
+		MessageTemplate: templates.Otp_template,
 	})
 	if err != nil {
 		logger.Error("Failed send notification")
