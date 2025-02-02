@@ -235,7 +235,7 @@ const (
 
                                     <h1 style="margin-top:0;color:#111111;font-size:24px;line-height:36px;font-weight:600;margin-bottom:24px;" >Hi {{.Name}}!</h1>
 
-                                    <p style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:16px;line-height:28px;" >Thanks for sign up, before continue,you must verification your email with the otp. <strong style="font-weight:600;" >This otp is only valid for the next 5 minutes</strong>.</p>
+                                    <p style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:16px;line-height:28px;" >Forgot your password? You recently requested to reset the password for your account. <strong style="font-weight:600;" >Use this otp code for request change password and only valid for the next 5 minutes</strong>.</p>
 
                                     <table width="100%" align="center" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;" >
                                         <tr>
@@ -257,7 +257,6 @@ const (
 
                                     <p style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:16px;line-height:28px;" >Cheers,
                                         <br>The Infinitech Team</p>
-
                                 </td>
                             </tr>
                         </table>
@@ -279,15 +278,12 @@ const (
                                 </td>
                             </tr>
                         </table>
-
                     </td>
                 </tr>
             </table>
-
         </td>
     </tr>
 </table>
-
 </body>
 </html>
 	`
