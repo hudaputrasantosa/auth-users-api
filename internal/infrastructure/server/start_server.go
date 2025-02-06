@@ -7,13 +7,13 @@ import (
 	"os/signal"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/connection"
+	"github.com/hudaputrasantosa/auth-users-api/internal/config"
 )
 
 // StartServer func for starting a simple server.
 func StartServer(a *fiber.App) {
 	// Build Fiber connection URL.
-	fiberConnectURL, _ := connection.ConnectionURLBuilder("fiber")
+	fiberConnectURL, _ := config.ConnectionURLBuilder("fiber")
 
 	// Run server.
 	if err := a.Listen(fiberConnectURL); err != nil {
@@ -41,7 +41,7 @@ func StartServerWithGracefulShutdown(a *fiber.App) {
 	}()
 
 	// Build Fiber connection URL.
-	fiberConnURL, _ := connection.ConnectionURLBuilder("fiber")
+	fiberConnURL, _ := config.ConnectionURLBuilder("fiber")
 
 	// Run server.
 	if err := a.Listen(fiberConnURL); err != nil {

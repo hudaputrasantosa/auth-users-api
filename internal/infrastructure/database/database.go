@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 
+	"github.com/hudaputrasantosa/auth-users-api/internal/config"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
-	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/connection"
 )
 
 type Dbinstance struct {
@@ -19,7 +19,7 @@ type Dbinstance struct {
 var DB Dbinstance
 
 func Connect() {
-	dsn, _ := connection.ConnectionURLBuilder("postgres")
+	dsn, _ := config.ConnectionURLBuilder("postgres")
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Info),
