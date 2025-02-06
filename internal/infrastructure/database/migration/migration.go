@@ -25,7 +25,7 @@ func Migration() {
 		// check user email
 		email := config.Config("USER_EMAIL_MIGRATION")
 		if res := database.DB.Db.First(&user, "email = ?", email); res != nil {
-			fmt.Printf("User with email %s already exists", user.Email)
+			fmt.Printf("User with email %s already exists\n", user.Email)
 		} else {
 			user := &models.User{
 				Name:     "Admin Migration",

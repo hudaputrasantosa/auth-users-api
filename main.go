@@ -17,6 +17,8 @@ func main() {
 	database.Connect()
 	//migration database
 	migration.Migration()
+	//Initiate Redis
+	config.InitRedis()
 	// initial fiber
 	app := fiber.New()
 	// Middleware application
