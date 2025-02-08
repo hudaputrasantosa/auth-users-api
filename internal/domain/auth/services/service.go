@@ -6,20 +6,24 @@ import (
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
 	authRepository "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/repositories"
 	userRepository "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/repositories"
+	"github.com/redis/go-redis/v9"
 )
 
 type serviceAuth struct {
 	authRepository authRepository.AuthRepository
 	userRepository userRepository.UserRepository
+	redis          *redis.Client
 }
 
 func NewAuthService(
 	authRepository authRepository.AuthRepository,
 	userRepository userRepository.UserRepository,
+	redis *redis.Client,
 ) *serviceAuth {
 	return &serviceAuth{
 		authRepository,
 		userRepository,
+		redis,
 	}
 }
 
@@ -27,7 +31,7 @@ func NewAuthService(
 type AuthService interface {
 	ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error)
 	RegisterUser(ctx context.Context, payload dto.RegisterUserSchema) (interface{}, int, error)
-	// Verification(ctx context.Context, otp string) (*model.User, error)
+	VerificationUser(ctx context.Context, payload dto.VerificationUser) (string, int, error)
 	// ResendVerification(ctx context.Context, token string) (*model.User, error)
 	// ForgotPassword(ctx context.Context, contact *model.User) (*model.User, error)
 	// ResendForgotPassword(ctx context.Context, token *model.User) (*model.User, error)

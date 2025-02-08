@@ -28,6 +28,7 @@ func main() {
 	// Services
 	services := delivery.NewService(delivery.Inject{
 		Repository: repositories,
+		Redis:      config.RedisClient,
 	})
 	// Rest API Handler
 	restHandler := delivery.NewRestHandler(services.UserService, services.AuthService)
