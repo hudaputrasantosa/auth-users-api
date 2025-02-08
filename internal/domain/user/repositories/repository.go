@@ -21,5 +21,6 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	Save(ctx context.Context, payload *models.User) (*models.User, error)
 	Update(ctx context.Context, payload *models.User) (*models.User, error)
+	UpdateStatusById(ctx context.Context, id string) (*models.User, error)
 	Delete(ctx context.Context, id string, user *models.User) error
 }

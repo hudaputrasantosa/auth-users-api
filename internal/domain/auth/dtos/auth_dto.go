@@ -12,3 +12,8 @@ type ValidateUserSchema struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6"`
 }
+
+type VerificationUser struct {
+	Token string `json:"token" validate:"required"`
+	Otp   string `json:"otp" validate:"required,min=6"`
+}

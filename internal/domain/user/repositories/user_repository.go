@@ -64,6 +64,22 @@ func (repo *repositoryUser) Update(ctx context.Context, payload *model.User) (*m
 	return payload, nil
 }
 
+func (repo *repositoryUser) UpdateStatusById(ctx context.Context, userId string) (*model.User, error) {
+	user, err := repo.FindByID(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	user.IsActive = true
+	tx := repo.db.WithContext(ctx).Model(&user)
+
+	if err := tx.Save(&user).Error; err != nil {
+		logger.Error("error update", zap.Error(err))
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (repo *repositoryUser) Delete(ctx context.Context, id string, user *model.User) error {
 	tx := repo.db.WithContext(ctx).Model(&user)
 
