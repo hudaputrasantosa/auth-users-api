@@ -46,7 +46,7 @@ func RespondWithPagination(c *fiber.Ctx, code int, message string, total int, pa
 	})
 }
 
-func ErrorMessage(c *fiber.Ctx, statusCode int, message string, err error) error {
+func ErrorMessage(c *fiber.Ctx, statusCode int, message string, err error, data ...interface{}) error {
 	response := &Response{
 		Error:   true,
 		Message: message,
@@ -54,6 +54,10 @@ func ErrorMessage(c *fiber.Ctx, statusCode int, message string, err error) error
 
 	if err != nil {
 		response.ErrorDetails = fmt.Sprintf("%v", err)
+	}
+
+	if data != nil {
+		response.Data = data
 	}
 
 	return c.Status(statusCode).JSON(response)

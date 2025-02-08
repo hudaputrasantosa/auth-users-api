@@ -10,46 +10,50 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/hudaputrasantosa/auth-users-api/internal/config"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils"
 )
 
 // Tokens struct to describe tokens object.
 type Token struct {
-	AccessToken  string
+	Token        string
 	RefreshToken string
 }
 
 // GenerateNewTokens func for generate a new Access & Refresh tokens.
-func GenerateNewToken(id string, role string) (*Token, error) {
+func GenerateNewToken(id string, minuteExpired int, tokenType utils.TokenTypeEnum) (*Token, error) {
 	// Generate JWT Access token.
-	accessToken, err := generateNewAccessToken(id, role)
+	accessToken, err := generateNewAccessToken(id, minuteExpired, tokenType)
 	if err != nil {
-		// Return token generation error.
 		return nil, err
 	}
 
-	// Generate JWT Refresh token.
-	refreshToken, err := generateNewRefreshToken()
-	if err != nil {
-		// Return token generation error.
-		return nil, err
+	if tokenType == utils.AccessToken {
+		// Generate JWT Refresh token.
+		refreshToken, err := generateNewRefreshToken()
+		if err != nil {
+			return nil, err
+		}
+
+		return &Token{
+			Token:        accessToken,
+			RefreshToken: refreshToken,
+		}, nil
 	}
 
 	return &Token{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		Token: accessToken,
 	}, nil
 }
 
 // private func for generate a new Access token.
-func generateNewAccessToken(userID string, role string) (string, error) {
+func generateNewAccessToken(userID string, minuteExpired int, tokenType utils.TokenTypeEnum) (string, error) {
 	// Set expires minutes count for secret key from .env file.
-	minutesCount, err := strconv.Atoi(config.Config("JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT"))
 
 	// Create a new claims to JWT.
 	claims := jwt.MapClaims{
 		"id":   userID,
-		"role": role,
-		"exp":  time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix(),
+		"type": tokenType,
+		"exp":  time.Now().Add(time.Minute * time.Duration(minuteExpired)).Unix(),
 	}
 
 	// Create a new JWT access token with claims.
