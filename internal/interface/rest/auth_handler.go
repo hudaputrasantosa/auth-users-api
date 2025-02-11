@@ -29,6 +29,7 @@ func NewHandleAuthRoute(
 	routerV1.Post("/register", handlerAuth.registerUser)
 	routerV1.Post("/login", handlerAuth.validateUser)
 	routerV1.Post("/verification", handlerAuth.verificationUser)
+	routerV1.Post("/verification/resend", handlerAuth.resendVerificationUser)
 }
 
 // Handler / Controller Auth Service
@@ -100,6 +101,30 @@ func (h *handleAuth) verificationUser(c *fiber.Ctx) error {
 	}
 
 	res, status, err := h.authClient.VerificationUser(ctx, payload)
+	if err != nil {
+		return response.ErrorMessage(c, status, "Failed verification", err)
+	}
+
+	// return success with token otp
+	return response.SuccessMessageWithData(c, status, "Verification user successfully", res)
+}
+
+func (h *handleAuth) resendVerificationUser(c *fiber.Ctx) error {
+	ctx := c.Context()
+	// Create or initial user struct payload
+	var payload dto.ResendVerificationUser
+
+	// Check received data from JSON body.
+	if err := c.BodyParser(&payload); err != nil {
+		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+	}
+
+	// check input validation
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
+	}
+
+	res, status, err := h.authClient.ResendVerificationUser(ctx, payload)
 	if err != nil {
 		return response.ErrorMessage(c, status, "Failed verification", err)
 	}

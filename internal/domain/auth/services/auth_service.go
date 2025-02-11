@@ -38,6 +38,10 @@ type UserRegisterResponse struct {
 	Expired int
 }
 
+type ResendVerificationResponse struct {
+	Token string
+}
+
 func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error) {
 	// Create user model to store data
 	var user *model.User
@@ -151,7 +155,6 @@ func (s *serviceAuth) RegisterUser(ctx context.Context, payload dto.RegisterUser
 	}
 	// generate otp
 	otp := otp.GenerateOTP(6)
-
 	// set otp code use redis
 	key := fmt.Sprintf(cache.REGISTER_OTP+"%s", user.ID.String()+"_"+otp)
 	s.redis.Set(ctx, key, otp, 5*time.Minute)
@@ -199,9 +202,15 @@ func (s *serviceAuth) VerificationUser(ctx context.Context, payload dto.Verifica
 	if !ok {
 		return "", fiber.StatusBadRequest, utils.ErrorUserVerification
 	}
-
 	// make a key otp verify for get redis by key
 	userId := fmt.Sprintf("%v", claims)
+	user, err := s.userRepository.FindByID(ctx, userId)
+	if err != nil {
+		return "", fiber.StatusBadRequest, utils.ErrorUserVerification
+	}
+	if user.IsActive {
+		return "", fiber.StatusNotAcceptable, utils.FailedUserVerification
+	}
 	key := fmt.Sprintf(cache.REGISTER_OTP+"%s", userId+"_"+payload.Otp)
 	userOtp := s.redis.Get(ctx, key).Val()
 
@@ -220,4 +229,52 @@ func (s *serviceAuth) VerificationUser(ctx context.Context, payload dto.Verifica
 	s.redis.Del(ctx, key)
 
 	return res.Email, fiber.StatusOK, nil
+}
+
+func (s *serviceAuth) ResendVerificationUser(ctx context.Context, payload dto.ResendVerificationUser) (interface{}, int, error) {
+	// parse for valid token
+	parsedToken, err := jwt.Parse(payload.Token, token.JwtKeyFunc)
+	if err == nil {
+		return nil, fiber.StatusBadRequest, utils.ErrorResendUserVerification
+	}
+	claims := parsedToken.Claims.(jwt.MapClaims)["id"]
+
+	user, err := s.userRepository.FindByID(ctx, claims.(string))
+	if err != nil {
+		return nil, fiber.StatusBadRequest, utils.ErrorResendUserVerification
+	}
+	if user.IsActive {
+		return nil, fiber.StatusNotAcceptable, utils.FailedResendUserVerification
+	}
+
+	// generate otp
+	otp := otp.GenerateOTP(6)
+	// set otp code use redis
+	key := fmt.Sprintf(cache.REGISTER_OTP+"%s", user.ID.String()+"_"+otp)
+	s.redis.Set(ctx, key, otp, 5*time.Minute)
+
+	// generate otp token from jwt
+	minuteExpired := 5
+	verifyToken, err := token.GenerateNewToken(user.ID.String(), minuteExpired, globalUtils.VerificationToken)
+	if err != nil {
+		logger.Error("Error generate token", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, utils.ErrorResendUserVerification
+	}
+
+	// sent otp to active email that registered
+	_, err = notification.MailersendNotification(&notification.RecipientInformation{
+		Email: user.Email,
+		Name:  user.Name,
+	}, &templates.DataBodyInformation{
+		Name:            user.Name,
+		Otp:             otp,
+		MessageTemplate: templates.Otp_template,
+	})
+	if err != nil {
+		logger.Error("Failed send notification")
+	}
+
+	return &ResendVerificationResponse{
+		Token: verifyToken.Token,
+	}, fiber.StatusOK, nil
 }
