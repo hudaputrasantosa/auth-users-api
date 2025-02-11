@@ -33,7 +33,7 @@ func ParseFile(data *DataBodyInformation) (*DataEmailTemplate, error) {
 	// Execute the template with dynamic data
 	switch data.MessageTemplate {
 	case Otp_template:
-		subject = "OTP Register Verification"
+		subject = "OTP Account Verification"
 		err = templ.Execute(&body, &DataBodyInformation{Name: data.Name, Otp: data.Otp})
 	case Reset_password_template:
 		subject = "OTP Reset Password"
