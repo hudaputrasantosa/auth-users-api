@@ -42,6 +42,11 @@ type ResendVerificationResponse struct {
 	Token string
 }
 
+type ForgotPasswordResponse struct {
+	Email string
+	Token string
+}
+
 func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error) {
 	// Create user model to store data
 	var user *model.User
@@ -216,7 +221,7 @@ func (s *serviceAuth) VerificationUser(ctx context.Context, payload dto.Verifica
 
 	// check for valid otp
 	if userOtp == "" || userOtp != payload.Otp {
-		return "", fiber.StatusBadRequest, errors.New("can't process verification, because otp not valid or other")
+		return "", fiber.StatusBadRequest, utils.ErrorInvalidOtpCode
 	}
 
 	res, err := s.userRepository.UpdateStatusById(ctx, userId)
@@ -277,4 +282,104 @@ func (s *serviceAuth) ResendVerificationUser(ctx context.Context, payload dto.Re
 	return &ResendVerificationResponse{
 		Token: verifyToken.Token,
 	}, fiber.StatusOK, nil
+}
+
+func (s *serviceAuth) ForgotPassword(ctx context.Context, email string) (*ForgotPasswordResponse, int, error) {
+	// check email existing
+	user, err := s.userRepository.FindByEmail(ctx, email)
+	if err != nil || err == gorm.ErrRecordNotFound {
+		logger.Error("Error request forgot password", zap.Error(err))
+		return nil, fiber.StatusBadRequest, utils.FailedForgotPassword
+	}
+
+	// generate otp
+	otp := otp.GenerateOTP(6)
+	// set otp code use redis
+	key := fmt.Sprintf(cache.FORGOT_PASSWORD_OTP+"%s", user.ID.String()+"_"+otp)
+	s.redis.Set(ctx, key, otp, 5*time.Minute)
+
+	// generate otp token from jwt
+	minuteExpired := 5
+	verifyForgotPasswordToken, err := token.GenerateNewToken(user.ID.String(), minuteExpired, globalUtils.VerifyForgotPasswordToken)
+	if err != nil {
+		logger.Error("Error generate token", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, utils.ErrorResendUserVerification
+	}
+
+	// sent otp to active email that registered
+	_, err = notification.MailersendNotification(&notification.RecipientInformation{
+		Email: user.Email,
+		Name:  user.Name,
+	}, &templates.DataBodyInformation{
+		Name:            user.Name,
+		Otp:             otp,
+		MessageTemplate: templates.Reset_password_template,
+	})
+	if err != nil {
+		logger.Error("Failed send notification")
+	}
+
+	// return token
+	return &ForgotPasswordResponse{
+		Email: user.Email,
+		Token: verifyForgotPasswordToken.Token,
+	}, fiber.StatusOK, nil
+}
+
+func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPassword) (int, error) {
+	// check valid and parsing token
+	token, err := jwt.Parse(payload.Token, token.JwtKeyFunc)
+	if err != nil {
+		logger.Error("error jwt", zap.Error(err))
+		return fiber.StatusBadRequest, utils.ErrorResetPassword
+	}
+	// get userid by claims token
+	claims, ok := token.Claims.(jwt.MapClaims)["id"]
+	if !ok {
+		return fiber.StatusBadRequest, utils.ErrorResetPassword
+	}
+
+	userId := fmt.Sprintf("%v", claims)
+	user, err := s.userRepository.FindByID(ctx, userId)
+	if err != nil {
+		return fiber.StatusBadRequest, utils.ErrorResetPassword
+	}
+
+	// check valid otp code
+	key := fmt.Sprintf(cache.FORGOT_PASSWORD_OTP+"%s", userId+"_"+payload.Otp)
+	userOtp := s.redis.Get(ctx, key).Val()
+
+	if userOtp == "" || userOtp != payload.Otp {
+		return fiber.StatusBadRequest, utils.ErrorInvalidOtpCode
+	}
+
+	// check user ativated, if inactive, then activated user
+	if !user.IsActive {
+		_, err := s.userRepository.UpdateStatusById(ctx, userId)
+		if err != nil {
+			logger.Error("error update status user", zap.Error(err))
+			return fiber.StatusInternalServerError, utils.ErrorResetPassword
+		}
+	}
+
+	// update new password by userId
+	newHashPassword, err := hash.HashPassword(payload.NewPassword)
+	if err != nil {
+		logger.Error("Error, failed to hash password", zap.Error(err))
+		return fiber.StatusInternalServerError, utils.ErrorResetPassword
+	}
+
+	user.Password = newHashPassword
+	user.UpdatedAt = time.Now()
+
+	_, err = s.userRepository.Update(ctx, user)
+	if err != nil {
+		logger.Error("error update password user", zap.Error(err))
+		return fiber.StatusInternalServerError, utils.ErrorResetPassword
+	}
+
+	// delete key otp not used
+	s.redis.Del(ctx, key)
+
+	return fiber.StatusOK, nil
 }

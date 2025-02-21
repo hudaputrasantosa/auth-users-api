@@ -20,3 +20,11 @@ type VerificationUser struct {
 type ResendVerificationUser struct {
 	Token string `json:"token" validate:"required"`
 }
+type RequestForgotPassword struct {
+	Email string `json:"email" validate:"required,email"`
+}
+type ResetPassword struct {
+	Token       string `json:"token" validate:"required"`
+	Otp         string `json:"otp" validate:"required,min=6"`
+	NewPassword string `json:"new_password" validate:"required,min=6"`
+}

@@ -30,6 +30,8 @@ func NewHandleAuthRoute(
 	routerV1.Post("/login", handlerAuth.validateUser)
 	routerV1.Post("/verification", handlerAuth.verificationUser)
 	routerV1.Post("/verification/resend", handlerAuth.resendVerificationUser)
+	routerV1.Post("/forgot-password", handlerAuth.forgotPassword)
+	routerV1.Post("/reset-password", handlerAuth.resetPassword)
 }
 
 // Handler / Controller Auth Service
@@ -131,4 +133,48 @@ func (h *handleAuth) resendVerificationUser(c *fiber.Ctx) error {
 
 	// return success with token otp
 	return response.SuccessMessageWithData(c, status, "Verification user successfully", res)
+}
+
+func (h *handleAuth) forgotPassword(c *fiber.Ctx) error {
+	ctx := c.Context()
+	// Create or initial user struct payload
+	var payload dto.RequestForgotPassword
+
+	// Check received data from JSON body.
+	if err := c.BodyParser(&payload); err != nil {
+		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+	}
+
+	// check input validation
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
+	}
+
+	res, status, err := h.authClient.ForgotPassword(ctx, payload.Email)
+	if err != nil {
+		return response.ErrorMessage(c, status, "Failed Forgot Password", err)
+	}
+	return response.SuccessMessageWithData(c, status, "Request Forgot Password successfully", res)
+}
+
+func (h *handleAuth) resetPassword(c *fiber.Ctx) error {
+	ctx := c.Context()
+	// Create or initial user struct payload
+	var payload dto.ResetPassword
+
+	// Check received data from JSON body.
+	if err := c.BodyParser(&payload); err != nil {
+		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+	}
+
+	// check input validation
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
+	}
+
+	status, err := h.authClient.ResetPassword(ctx, payload)
+	if err != nil {
+		return response.ErrorMessage(c, status, "Failed Reset Password", err)
+	}
+	return response.SuccessMessageWithData(c, status, "Reset Password successfully", "")
 }

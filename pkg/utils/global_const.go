@@ -6,8 +6,9 @@ type TokenTypeEnum string
 
 // Token Type
 const (
-	VerificationToken TokenTypeEnum = "VERIFICATION_TOKEN"
-	AccessToken       TokenTypeEnum = "ACCESS_TOKEN"
+	VerificationToken         TokenTypeEnum = "VERIFICATION_TOKEN"
+	VerifyForgotPasswordToken TokenTypeEnum = "VERIFICATION_FORGOT_PASSWORD_TOKEN"
+	AccessToken               TokenTypeEnum = "ACCESS_TOKEN"
 )
 
 // Global Errors

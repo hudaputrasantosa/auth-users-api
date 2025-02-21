@@ -33,6 +33,7 @@ type AuthService interface {
 	RegisterUser(ctx context.Context, payload dto.RegisterUserSchema) (interface{}, int, error)
 	VerificationUser(ctx context.Context, payload dto.VerificationUser) (string, int, error)
 	ResendVerificationUser(ctx context.Context, payload dto.ResendVerificationUser) (interface{}, int, error)
-	// ForgotPassword(ctx context.Context, contact *model.User) (*model.User, error)
+	ForgotPassword(ctx context.Context, email string) (*ForgotPasswordResponse, int, error)
+	ResetPassword(ctx context.Context, payload dto.ResetPassword) (int, error)
 	// ResendForgotPassword(ctx context.Context, token *model.User) (*model.User, error)
 }
