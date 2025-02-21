@@ -89,7 +89,7 @@ func (s *serviceUser) Save(ctx context.Context, payload *dto.CreateUserSchema) (
 	return data, fiber.StatusCreated, nil
 }
 
-func (s *serviceUser) Update(ctx context.Context, payload *dto.UpdateUserSchema) (*model.User, int, error) {
+func (s *serviceUser) Update(ctx context.Context, id string, payload *dto.UpdateUserSchema) (*model.User, int, error) {
 	user, status, err := s.FindByID(ctx, payload.ID)
 	if err != nil {
 		return nil, status, err
