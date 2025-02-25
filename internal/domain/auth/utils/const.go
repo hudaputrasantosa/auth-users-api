@@ -12,5 +12,6 @@ var (
 	ErrorResendUserVerification  = errors.New("error, can't process resend verification")
 	FailedResendUserVerification = errors.New("failed process resend verification")
 	FailedForgotPassword         = errors.New("failed request forgot password")
+	ErrorResendForgotPassword    = errors.New("error, can't process resend forgot password")
 	ErrorResetPassword           = errors.New("error, can't process reset password")
 )

@@ -31,6 +31,7 @@ func NewHandleAuthRoute(
 	routerV1.Post("/verification", handlerAuth.verificationUser)
 	routerV1.Post("/verification/resend", handlerAuth.resendVerificationUser)
 	routerV1.Post("/forgot-password", handlerAuth.forgotPassword)
+	routerV1.Post("/forgot-password/resend", handlerAuth.resendForgotPassword)
 	routerV1.Post("/reset-password", handlerAuth.resetPassword)
 }
 
@@ -155,6 +156,30 @@ func (h *handleAuth) forgotPassword(c *fiber.Ctx) error {
 		return response.ErrorMessage(c, status, "Failed Forgot Password", err)
 	}
 	return response.SuccessMessageWithData(c, status, "Request Forgot Password successfully", res)
+}
+
+func (h *handleAuth) resendForgotPassword(c *fiber.Ctx) error {
+	ctx := c.Context()
+	// Create or initial user struct payload
+	var payload dto.ResendForgotPassword
+
+	// Check received data from JSON body.
+	if err := c.BodyParser(&payload); err != nil {
+		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+	}
+
+	// check input validation
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
+	}
+
+	res, status, err := h.authClient.ResendForgotPassword(ctx, payload)
+	if err != nil {
+		return response.ErrorMessage(c, status, "Failed resend forgot password", err)
+	}
+
+	// return success with token otp
+	return response.SuccessMessageWithData(c, status, "resend forgot password successfully", res)
 }
 
 func (h *handleAuth) resetPassword(c *fiber.Ctx) error {

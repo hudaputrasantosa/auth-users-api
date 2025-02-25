@@ -326,6 +326,52 @@ func (s *serviceAuth) ForgotPassword(ctx context.Context, email string) (*Forgot
 	}, fiber.StatusOK, nil
 }
 
+func (s *serviceAuth) ResendForgotPassword(ctx context.Context, payload dto.ResendForgotPassword) (interface{}, int, error) {
+	// parse for valid token
+	parsedToken, err := jwt.Parse(payload.Token, token.JwtKeyFunc)
+	if err == nil {
+		return nil, fiber.StatusBadRequest, utils.ErrorResendForgotPassword
+	}
+
+	claims := parsedToken.Claims.(jwt.MapClaims)["id"]
+
+	user, err := s.userRepository.FindByID(ctx, claims.(string))
+	if err != nil {
+		return nil, fiber.StatusBadRequest, utils.ErrorResendForgotPassword
+	}
+
+	// generate otp
+	otp := otp.GenerateOTP(6)
+	// set otp code use redis
+	key := fmt.Sprintf(cache.FORGOT_PASSWORD_OTP+"%s", user.ID.String()+"_"+otp)
+	s.redis.Set(ctx, key, otp, 5*time.Minute)
+
+	// generate otp token from jwt
+	minuteExpired := 5
+	verifyToken, err := token.GenerateNewToken(user.ID.String(), minuteExpired, globalUtils.VerifyForgotPasswordToken)
+	if err != nil {
+		logger.Error("Error generate token", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, utils.ErrorResendForgotPassword
+	}
+
+	// sent otp to active email that registered
+	_, err = notification.MailersendNotification(&notification.RecipientInformation{
+		Email: user.Email,
+		Name:  user.Name,
+	}, &templates.DataBodyInformation{
+		Name:            user.Name,
+		Otp:             otp,
+		MessageTemplate: templates.Reset_password_template,
+	})
+	if err != nil {
+		logger.Error("Failed send notification")
+	}
+
+	return &ResendVerificationResponse{
+		Token: verifyToken.Token,
+	}, fiber.StatusOK, nil
+}
+
 func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPassword) (int, error) {
 	// check valid and parsing token
 	token, err := jwt.Parse(payload.Token, token.JwtKeyFunc)
