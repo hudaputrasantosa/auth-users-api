@@ -1,13 +1,10 @@
 package middleware
 
 import (
-	"time"
-
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	// "github.com/gofiber/fiber/v2/middleware/csrf"
@@ -30,18 +27,6 @@ func FiberMiddleware(app *fiber.App) {
 	// 	Expiration:     3 * time.Hour,         // expiration is the duration before CSRF token will expire
 	// }
 
-	limiterConfig := limiter.Config{
-		Max:               10,
-		Expiration:        1 * time.Minute,
-		LimiterMiddleware: limiter.SlidingWindow{}, // sliding window rate limiter,
-		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"errors":  true,
-				"message": "Too many requests, please try again later.",
-			})
-		},
-	}
-
 	swaggerConfig := swagger.Config{
 		BasePath: "/",
 		FilePath: "./docs/swagger.yaml",
@@ -54,7 +39,6 @@ func FiberMiddleware(app *fiber.App) {
 		logger.New(),
 		cors.New(corsConfig),
 		// csrf.New(csrfConfig),
-		limiter.New(limiterConfig),
 		recover.New(), // recover will catch panics like from handler and recover the panic and throw to fiber error handler
 		swagger.New(swaggerConfig),
 	)
