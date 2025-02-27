@@ -6,6 +6,7 @@ import (
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
 	authService "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/services"
 
+	"github.com/hudaputrasantosa/auth-users-api/pkg/middleware"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/validation"
 )
@@ -26,13 +27,13 @@ func NewHandleAuthRoute(
 	routerV1 := api.Group("/v1/auth")
 
 	//Routes Version 1.0
-	routerV1.Post("/register", handlerAuth.registerUser)
-	routerV1.Post("/login", handlerAuth.validateUser)
-	routerV1.Post("/verification", handlerAuth.verificationUser)
-	routerV1.Post("/verification/resend", handlerAuth.resendVerificationUser)
-	routerV1.Post("/forgot-password", handlerAuth.forgotPassword)
-	routerV1.Post("/forgot-password/resend", handlerAuth.resendForgotPassword)
-	routerV1.Post("/reset-password", handlerAuth.resetPassword)
+	routerV1.Post("/register", middleware.RateLimit(3, 15, nil), handlerAuth.registerUser)
+	routerV1.Post("/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
+	routerV1.Post("/verification", middleware.RateLimit(3, 15, nil), handlerAuth.verificationUser)
+	routerV1.Post("/verification/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendVerificationUser)
+	routerV1.Post("/forgot-password", middleware.RateLimit(3, 15, nil), handlerAuth.forgotPassword)
+	routerV1.Post("/forgot-password/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendForgotPassword)
+	routerV1.Post("/reset-password", middleware.RateLimit(3, 15, nil), handlerAuth.resetPassword)
 }
 
 // Handler / Controller Auth Service

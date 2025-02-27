@@ -9,6 +9,7 @@ import (
 	service "github.com/hudaputrasantosa/auth-users-api/internal/domain/user/services"
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database"
 	"github.com/hudaputrasantosa/auth-users-api/internal/middleware"
+	middle "github.com/hudaputrasantosa/auth-users-api/pkg/middleware"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/validation"
 )
@@ -27,7 +28,7 @@ func NewHandleUserRoute(userClient service.UserService, router *fiber.App) {
 
 	// Router Group Version 1.0 and Middleware Group
 	routerV1 := api.Group("/v1/users")
-	routerV1.Use(middleware.Authorized())
+	routerV1.Use(middleware.Authorized(), middle.RateLimit(30, 60, nil))
 
 	routerV1.Use(middleware.IsAdmin(handlerUser.userClient))
 	routerV1.Post("/", handlerUser.createUser)
