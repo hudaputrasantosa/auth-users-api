@@ -416,7 +416,7 @@ func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPasswo
 	}
 
 	user.Password = newHashPassword
-	user.UpdatedAt = time.Now()
+	user.LastPasswordUpdated = time.Now()
 
 	_, err = s.userRepository.Update(ctx, user)
 	if err != nil {
