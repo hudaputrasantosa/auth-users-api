@@ -29,6 +29,7 @@ func NewAuthService(
 
 // Interface Auth Service untuk mengetahui beberapa schema header yang tersedia pada User service
 type AuthService interface {
+	// Member Section
 	ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error)
 	RegisterUser(ctx context.Context, payload dto.RegisterUserSchema) (interface{}, int, error)
 	VerificationUser(ctx context.Context, payload dto.VerificationUser) (string, int, error)
@@ -36,4 +37,7 @@ type AuthService interface {
 	ForgotPassword(ctx context.Context, email string) (*ForgotPasswordResponse, int, error)
 	ResendForgotPassword(ctx context.Context, payload dto.ResendForgotPassword) (interface{}, int, error)
 	ResetPassword(ctx context.Context, payload dto.ResetPassword) (int, error)
+
+	// Admin Section
+	ValidateUserAdmin(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error)
 }

@@ -29,11 +29,14 @@ func NewHandleAuthRoute(
 	//Routes Version 1.0
 	routerV1.Post("/register", middleware.RateLimit(3, 15, nil), handlerAuth.registerUser)
 	routerV1.Post("/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
+	// routerV1.Post("/sso/google", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
 	routerV1.Post("/verification", middleware.RateLimit(3, 15, nil), handlerAuth.verificationUser)
 	routerV1.Post("/verification/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendVerificationUser)
 	routerV1.Post("/forgot-password", middleware.RateLimit(3, 15, nil), handlerAuth.forgotPassword)
 	routerV1.Post("/forgot-password/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendForgotPassword)
 	routerV1.Post("/reset-password", middleware.RateLimit(3, 15, nil), handlerAuth.resetPassword)
+
+	routerV1.Post("/admin/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUserAdmin)
 }
 
 // Handler / Controller Auth Service
@@ -203,4 +206,31 @@ func (h *handleAuth) resetPassword(c *fiber.Ctx) error {
 		return response.ErrorMessage(c, status, "Failed Reset Password", err)
 	}
 	return response.SuccessMessageWithData(c, status, "Reset Password successfully", "")
+}
+
+func (h *handleAuth) validateUserAdmin(c *fiber.Ctx) error {
+	ctx := c.Context()
+
+	// Create or initial login struct payload
+	var payload dto.ValidateUserSchema
+
+	// Check received data from JSON body.
+	if err := c.BodyParser(&payload); err != nil {
+		return response.ErrorMessage(c, fiber.StatusBadRequest, "Failed parsing", err)
+	}
+
+	// Validate data before proceessing.
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
+	}
+
+	res, status, err := h.authClient.ValidateUserAdmin(ctx, payload)
+	if err != nil {
+		if res != nil {
+			return response.ErrorMessage(c, status, "Failed login", err, res)
+		}
+		return response.ErrorMessage(c, status, "Failed login", err)
+	}
+
+	return response.SuccessMessageWithData(c, status, "Success login", res)
 }

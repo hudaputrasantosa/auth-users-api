@@ -429,3 +429,54 @@ func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPasswo
 
 	return fiber.StatusOK, nil
 }
+
+func (s *serviceAuth) ValidateUserAdmin(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error) {
+	// Create user model to store data
+	var user *model.User
+
+	// check email exist
+	user, err := s.userRepository.FindByEmail(ctx, payload.Email)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			logger.Error("email not found or not registered")
+			return nil, fiber.StatusNotFound, utils.FailedUserLogin
+		}
+
+		logger.Error(err.Error())
+		return nil, fiber.StatusInternalServerError, err
+	}
+
+	// check user role only admin
+	if user.Role != model.Admin {
+		logger.Error("user role not permitted")
+		return nil, fiber.StatusConflict, utils.FailedUserLogin
+	}
+
+	// check status user
+	if !user.IsActive {
+		logger.Error("admin user not active")
+		return nil, fiber.StatusBadRequest, errors.New("user is not activated")
+	}
+
+	//chack password
+	isPassword := hash.CheckPasswordHash(payload.Password, user.Password)
+	if !isPassword {
+		logger.Error("password is not match")
+		return nil, fiber.StatusConflict, utils.FailedUserLogin
+	}
+
+	// generate new access token and refresh token jwt
+	minuteExpired, _ := strconv.Atoi(config.Config("JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT"))
+	userToken, err := token.GenerateNewToken(user.ID.String(), minuteExpired, globalUtils.AccessToken)
+	if err != nil {
+		logger.Error("failed generate token", zap.Error(err))
+		return nil, fiber.StatusInternalServerError, globalUtils.ErrorGlobalPublicMessage
+	}
+
+	res := &UserTokenResponse{
+		AccessToken:  userToken.Token,
+		RefreshToken: userToken.RefreshToken,
+	}
+
+	return res, fiber.StatusOK, err
+}
