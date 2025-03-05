@@ -12,7 +12,8 @@ import (
 )
 
 func Migration() {
-	err := database.DB.Db.AutoMigrate(&models.User{})
+	migrateModels := []interface{}{&models.User{}, &models.UsersActivityHistory{}}
+	err := database.DB.Db.AutoMigrate(migrateModels...)
 	if err != nil {
 		logger.Fatal("Failed to migrate...")
 	} else {
