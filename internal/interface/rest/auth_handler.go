@@ -24,19 +24,20 @@ func NewHandleAuthRoute(
 	}
 
 	api := router.Group("/api")
-	routerV1 := api.Group("/v1/auth")
 
-	//Routes Version 1.0
-	routerV1.Post("/register", middleware.RateLimit(3, 15, nil), handlerAuth.registerUser)
-	routerV1.Post("/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
-	// routerV1.Post("/sso/google", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
-	routerV1.Post("/verification", middleware.RateLimit(3, 15, nil), handlerAuth.verificationUser)
-	routerV1.Post("/verification/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendVerificationUser)
-	routerV1.Post("/forgot-password", middleware.RateLimit(3, 15, nil), handlerAuth.forgotPassword)
-	routerV1.Post("/forgot-password/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendForgotPassword)
-	routerV1.Post("/reset-password", middleware.RateLimit(3, 15, nil), handlerAuth.resetPassword)
+	// Auth Member Router Version 1.0
+	memberRouterV1 := api.Group("/v1/member/auth")
+	memberRouterV1.Post("/register", middleware.RateLimit(3, 15, nil), handlerAuth.registerUser)
+	memberRouterV1.Post("/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
+	memberRouterV1.Post("/verification", middleware.RateLimit(3, 15, nil), handlerAuth.verificationUser)
+	memberRouterV1.Post("/verification/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendVerificationUser)
+	memberRouterV1.Post("/forgot-password", middleware.RateLimit(3, 15, nil), handlerAuth.forgotPassword)
+	memberRouterV1.Post("/forgot-password/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendForgotPassword)
+	memberRouterV1.Post("/reset-password", middleware.RateLimit(3, 15, nil), handlerAuth.resetPassword)
 
-	routerV1.Post("/admin/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUserAdmin)
+	// Auth Admin Router Version 1.0
+	adminRouterV1 := api.Group("/v1/admin/auth")
+	adminRouterV1.Post("/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUserAdmin)
 }
 
 // Handler / Controller Auth Service
