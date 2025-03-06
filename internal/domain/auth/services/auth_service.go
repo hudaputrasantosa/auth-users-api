@@ -47,7 +47,7 @@ type ForgotPasswordResponse struct {
 	Token string
 }
 
-func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema) (*UserTokenResponse, int, error) {
+func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUserSchema, activity *model.UsersActivityHistory) (*UserTokenResponse, int, error) {
 	// Create user model to store data
 	var user *model.User
 
@@ -111,6 +111,13 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 	if err != nil {
 		logger.Error("failed generate token", zap.Error(err))
 		return nil, fiber.StatusInternalServerError, globalUtils.ErrorGlobalPublicMessage
+	}
+
+	// add user activity
+	activity.UserID = user.ID
+	_, err = s.userRepository.SaveActivity(ctx, activity)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, err
 	}
 
 	res := &UserTokenResponse{
@@ -284,7 +291,7 @@ func (s *serviceAuth) ResendVerificationUser(ctx context.Context, payload dto.Re
 	}, fiber.StatusOK, nil
 }
 
-func (s *serviceAuth) ForgotPassword(ctx context.Context, email string) (*ForgotPasswordResponse, int, error) {
+func (s *serviceAuth) ForgotPassword(ctx context.Context, email string, activity *model.UsersActivityHistory) (*ForgotPasswordResponse, int, error) {
 	// check email existing
 	user, err := s.userRepository.FindByEmail(ctx, email)
 	if err != nil || err == gorm.ErrRecordNotFound {
@@ -317,6 +324,13 @@ func (s *serviceAuth) ForgotPassword(ctx context.Context, email string) (*Forgot
 	})
 	if err != nil {
 		logger.Error("Failed send notification")
+	}
+
+	// add user activity
+	activity.UserID = user.ID
+	_, err = s.userRepository.SaveActivity(ctx, activity)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, err
 	}
 
 	// return token
@@ -372,7 +386,7 @@ func (s *serviceAuth) ResendForgotPassword(ctx context.Context, payload dto.Rese
 	}, fiber.StatusOK, nil
 }
 
-func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPassword) (int, error) {
+func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPassword, activity *model.UsersActivityHistory) (int, error) {
 	// check valid and parsing token
 	token, err := jwt.Parse(payload.Token, token.JwtKeyFunc)
 	if err != nil {
@@ -422,6 +436,13 @@ func (s *serviceAuth) ResetPassword(ctx context.Context, payload dto.ResetPasswo
 	if err != nil {
 		logger.Error("error update password user", zap.Error(err))
 		return fiber.StatusInternalServerError, utils.ErrorResetPassword
+	}
+
+	// add user activity
+	activity.UserID = user.ID
+	_, err = s.userRepository.SaveActivity(ctx, activity)
+	if err != nil {
+		return fiber.StatusInternalServerError, err
 	}
 
 	// delete key otp not used
