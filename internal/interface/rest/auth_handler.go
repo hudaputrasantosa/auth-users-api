@@ -7,6 +7,7 @@ import (
 	authService "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/services"
 
 	"github.com/hudaputrasantosa/auth-users-api/pkg/middleware"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/utils"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/response"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/validation"
 )
@@ -57,7 +58,8 @@ func (h *handleAuth) validateUser(c *fiber.Ctx) error {
 		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
 
-	res, status, err := h.authClient.ValidateUser(ctx, payload)
+	activitySource := utils.DetectDevice(c)
+	res, status, err := h.authClient.ValidateUser(ctx, payload, &activitySource)
 	if err != nil {
 		if res != nil {
 			return response.ErrorMessage(c, status, "Failed login", err, res)
@@ -155,8 +157,8 @@ func (h *handleAuth) forgotPassword(c *fiber.Ctx) error {
 	if err := validation.ValidateStructDetail(payload); err != nil {
 		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
-
-	res, status, err := h.authClient.ForgotPassword(ctx, payload.Email)
+	activitySource := utils.DetectDevice(c)
+	res, status, err := h.authClient.ForgotPassword(ctx, payload.Email, &activitySource)
 	if err != nil {
 		return response.ErrorMessage(c, status, "Failed Forgot Password", err)
 	}
@@ -201,8 +203,8 @@ func (h *handleAuth) resetPassword(c *fiber.Ctx) error {
 	if err := validation.ValidateStructDetail(payload); err != nil {
 		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
 	}
-
-	status, err := h.authClient.ResetPassword(ctx, payload)
+	activitySource := utils.DetectDevice(c)
+	status, err := h.authClient.ResetPassword(ctx, payload, &activitySource)
 	if err != nil {
 		return response.ErrorMessage(c, status, "Failed Reset Password", err)
 	}
