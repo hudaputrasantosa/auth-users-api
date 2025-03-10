@@ -116,7 +116,7 @@ func (s *serviceUser) Delete(ctx context.Context, id string) (int, error) {
 		return status, err
 	}
 
-	err = s.userRepository.Delete(ctx, id, user)
+	err = s.userRepository.Delete(ctx, *user)
 	if err != nil {
 		return fiber.StatusInternalServerError, errors.New("failed delete user")
 	}

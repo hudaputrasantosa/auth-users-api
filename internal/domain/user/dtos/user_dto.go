@@ -24,3 +24,12 @@ type UpdateUserSchema struct {
 	Phone    string `json:"phone,omitempty" validate:"number,min=12"`
 	IsActive bool   `json:"is_active,omitempty"`
 }
+
+type UpdateUserMemberSchema struct {
+	Name  string `json:"name,omitempty"`
+	Phone string `json:"phone,omitempty" validate:"number,min=12"`
+}
+
+type DeactivatedAccount struct {
+	Password string `json:"password" validate:"required"`
+}

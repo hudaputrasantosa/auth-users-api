@@ -80,7 +80,7 @@ func (repo *repositoryUser) UpdateStatusById(ctx context.Context, userId string)
 	return user, nil
 }
 
-func (repo *repositoryUser) Delete(ctx context.Context, id string, user *model.User) error {
+func (repo *repositoryUser) Delete(ctx context.Context, user model.User) error {
 	tx := repo.db.WithContext(ctx).Model(&user)
 
 	if err := tx.Delete(&user).Error; err != nil {

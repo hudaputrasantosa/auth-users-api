@@ -21,10 +21,15 @@ func NewUserService(userRepository repo.UserRepository) *serviceUser {
 
 // Interface User Service untuk mengetahui beberapa schema header yang tersedia pada User service
 type UserService interface {
+	// General and Admin Role Interface
 	Finds(ctx context.Context) (*[]model.User, int, error)
 	FindByID(ctx context.Context, id string) (*model.User, int, error)
 	FindByEmail(ctx context.Context, email string) (*model.User, int, error)
 	Save(ctx context.Context, payload *dto.CreateUserSchema) (*model.User, int, error)
 	Update(ctx context.Context, id string, payload *dto.UpdateUserSchema) (*model.User, int, error)
 	Delete(ctx context.Context, id string) (int, error)
+
+	// Member Interface
+	UpdateMemberById(ctx context.Context, id string, payload *dto.UpdateUserMemberSchema) (*model.User, int, error)
+	DeactivatedAccount(ctx context.Context, id string, password string) (int, error)
 }

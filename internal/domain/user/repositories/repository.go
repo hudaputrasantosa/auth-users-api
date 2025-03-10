@@ -23,7 +23,7 @@ type UserRepository interface {
 	Save(ctx context.Context, payload *models.User) (*models.User, error)
 	Update(ctx context.Context, payload *models.User) (*models.User, error)
 	UpdateStatusById(ctx context.Context, id string) (*models.User, error)
-	Delete(ctx context.Context, id string, user *models.User) error
+	Delete(ctx context.Context, user models.User) error
 
 	// User Activity History Interface
 	FindByUser(ctx context.Context, userId string) (*[]models.UsersActivityHistory, error)
