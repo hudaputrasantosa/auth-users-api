@@ -9,10 +9,13 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database"
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/database/migration"
 	"github.com/hudaputrasantosa/auth-users-api/internal/infrastructure/server"
+	"github.com/hudaputrasantosa/auth-users-api/pkg/logger"
 	"github.com/hudaputrasantosa/auth-users-api/pkg/middleware"
 )
 
 func main() {
+	defer logger.Log.Sync() // Pastikan log disinkronisasi sebelum aplikasi berakhir
+
 	//initial database
 	database.Connect()
 	//migration database

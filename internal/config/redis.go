@@ -21,6 +21,7 @@ func InitRedis() {
 		Addr:     connection,
 		Password: redisPassword,
 		DB:       db,
+		PoolSize: 10,
 	})
 
 	// Check redis connection

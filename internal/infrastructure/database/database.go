@@ -2,6 +2,7 @@ package database
 
 import (
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -24,6 +25,10 @@ func Connect() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Info),
 	})
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	if err != nil {
 		logger.Fatal("failed to connect db", zap.Error(err))

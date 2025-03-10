@@ -47,8 +47,6 @@ func GenerateNewToken(id string, minuteExpired int, tokenType utils.TokenTypeEnu
 
 // private func for generate a new Access token.
 func generateNewAccessToken(userID string, minuteExpired int, tokenType utils.TokenTypeEnum) (string, error) {
-	// Set expires minutes count for secret key from .env file.
-
 	// Create a new claims to JWT.
 	claims := jwt.MapClaims{
 		"id":   userID,

@@ -64,8 +64,7 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 	}
 
 	//chack password
-	isPassword := hash.CheckPasswordHash(payload.Password, user.Password)
-	if !isPassword {
+	if !hash.CheckPasswordHash(payload.Password, user.Password) {
 		logger.Error("password is not match")
 		return nil, fiber.StatusConflict, utils.FailedUserLogin
 	}
@@ -74,9 +73,11 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 	if !user.IsActive {
 		// send email service to verification
 		otp := otp.GenerateOTP(6)
-
 		key := fmt.Sprintf(cache.REGISTER_OTP+"%s", user.ID.String()+"_"+otp)
-		s.redis.Set(ctx, key, otp, 5*time.Minute)
+		err := s.redis.SetEx(ctx, key, otp, 5*time.Minute).Err()
+		if err != nil {
+			logger.Error("Failed to set OTP in Redis", zap.Error(err))
+		}
 
 		minuteExpired := 5
 		token, err := token.GenerateNewToken(user.ID.String(), minuteExpired, globalUtils.VerificationToken)
@@ -85,17 +86,18 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 			return nil, fiber.StatusInternalServerError, utils.FailedUserLogin
 		}
 
-		_, err = notification.MailersendNotification(&notification.RecipientInformation{
-			Email: user.Email,
-			Name:  user.Name,
-		}, &templates.DataBodyInformation{
-			Name:            user.Name,
-			Otp:             otp,
-			MessageTemplate: templates.Otp_template,
-		})
-		if err != nil {
-			logger.Error("Failed send notification")
-		}
+		go func() {
+			if _, err := notification.MailersendNotification(&notification.RecipientInformation{
+				Email: user.Email,
+				Name:  user.Name,
+			}, &templates.DataBodyInformation{
+				Name:            user.Name,
+				Otp:             otp,
+				MessageTemplate: templates.Otp_template,
+			}); err != nil {
+				logger.Error("Failed send notification")
+			}
+		}()
 
 		res := &UserTokenResponse{
 			AccessToken: token.Token,
@@ -115,10 +117,13 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 
 	// add user activity
 	activity.UserID = user.ID
-	_, err = s.userRepository.SaveActivity(ctx, activity)
-	if err != nil {
-		return nil, fiber.StatusInternalServerError, err
-	}
+	// go s.userRepository.SaveActivity(ctx, activity)
+	go func() {
+		_, err := s.userRepository.SaveActivity(ctx, activity)
+		if err != nil {
+			logger.Error("Failed to save activity", zap.Error(err))
+		}
+	}()
 
 	res := &UserTokenResponse{
 		AccessToken:  userToken.Token,
