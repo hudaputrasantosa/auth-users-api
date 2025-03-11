@@ -38,6 +38,8 @@ func NewHandleUserRoute(userClient service.UserService, router *fiber.App) {
 	// Member Router Group and Middleware  Version 1.0
 	memberRouterV1 := api.Group("/v1/member")
 	memberRouterV1.Use(middleware.Authorized(), middle.RateLimit(30, 60, nil))
+	memberRouterV1.Get("/me", handlerUser.getUserMemberById)
 	memberRouterV1.Put("/profile/:id", handlerUser.updateProfile)
+	memberRouterV1.Put("/profile/:id/update-password", handlerUser.updatePassword)
 	memberRouterV1.Put("/account/deactivated/:id", handlerUser.deactivatedAccount)
 }

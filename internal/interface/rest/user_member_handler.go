@@ -7,6 +7,18 @@ import (
 	"github.com/hudaputrasantosa/auth-users-api/pkg/utils/validation"
 )
 
+func (h *handleUser) getUserMemberById(c *fiber.Ctx) error {
+	ctx := c.Context()
+	userId := c.Params("id")
+
+	res, status, err := h.userClient.FindByID(ctx, userId)
+	if err != nil {
+		return response.ErrorMessage(c, status, "User not found", err)
+	}
+
+	return response.SuccessMessageWithData(c, status, "Success get users data", res)
+}
+
 func (h *handleUser) updateProfile(c *fiber.Ctx) error {
 	ctx := c.Context()
 	userId := c.Params("id")
@@ -26,6 +38,27 @@ func (h *handleUser) updateProfile(c *fiber.Ctx) error {
 	}
 
 	return response.SuccessMessageWithData(c, status, "Success created", res)
+}
+
+func (h *handleUser) updatePassword(c *fiber.Ctx) error {
+	ctx := c.Context()
+	userId := c.Params("id")
+	var payload *dto.UpdatePasswordMember
+
+	if err := c.BodyParser(&payload); err != nil {
+		return response.ErrorMessage(c, fiber.StatusBadRequest, err.Error(), err)
+	}
+
+	if err := validation.ValidateStructDetail(payload); err != nil {
+		return response.ErrorValidationMessage(c, fiber.StatusBadRequest, err)
+	}
+
+	status, err := h.userClient.UpdatePassword(ctx, userId, payload)
+	if err != nil {
+		return response.ErrorMessage(c, status, "Failed create user", err)
+	}
+
+	return response.SuccessMessageWithData(c, status, "Success update password", nil)
 }
 
 func (h *handleUser) deactivatedAccount(c *fiber.Ctx) error {

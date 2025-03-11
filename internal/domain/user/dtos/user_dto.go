@@ -30,6 +30,11 @@ type UpdateUserMemberSchema struct {
 	Phone string `json:"phone,omitempty" validate:"number,min=12"`
 }
 
+type UpdatePasswordMember struct {
+	LastPassword string `json:"last_password" validate:"required"`
+	NewPassword  string `json:"new_password" validate:"required"`
+}
+
 type DeactivatedAccount struct {
 	Password string `json:"password" validate:"required"`
 }

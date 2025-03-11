@@ -117,7 +117,6 @@ func (s *serviceAuth) ValidateUser(ctx context.Context, payload dto.ValidateUser
 
 	// add user activity
 	activity.UserID = user.ID
-	// go s.userRepository.SaveActivity(ctx, activity)
 	go func() {
 		_, err := s.userRepository.SaveActivity(ctx, activity)
 		if err != nil {

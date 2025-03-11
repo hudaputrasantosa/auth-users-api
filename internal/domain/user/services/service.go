@@ -31,5 +31,6 @@ type UserService interface {
 
 	// Member Interface
 	UpdateMemberById(ctx context.Context, id string, payload *dto.UpdateUserMemberSchema) (*model.User, int, error)
+	UpdatePassword(ctx context.Context, id string, payload *dto.UpdatePasswordMember) (int, error)
 	DeactivatedAccount(ctx context.Context, id string, password string) (int, error)
 }
