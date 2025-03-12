@@ -64,6 +64,13 @@ func ConnectionURLBuilder(name string) (string, error) {
 			Config("SERVER_HOST"),
 			Config("SERVER_PORT"),
 		)
+	case "cloudinary":
+		url = fmt.Sprintf(
+			"cloudinary://%s:%s@%s",
+			Config("CLOUDINARY_API_KEY"),
+			Config("CLOUDINARY_API_SECRET_KEY"),
+			Config("CLOUDINARY_CLOUD_NAME"),
+		)
 	default:
 		// Return error message.
 		return "", fmt.Errorf("connection name '%v' is not supported", name)
