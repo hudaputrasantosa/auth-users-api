@@ -23,7 +23,7 @@ func (repo *repositoryUser) Finds(ctx context.Context) (*[]model.User, error) {
 func (repo *repositoryUser) FindByID(ctx context.Context, id string) (*model.User, error) {
 	var user *model.User
 
-	err := repo.db.WithContext(ctx).First(&user, "id = ?", id).Error
+	err := repo.db.WithContext(ctx).Select("id", "name", "username", "email", "phone", "is_active").First(&user, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}

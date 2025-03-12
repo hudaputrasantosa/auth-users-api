@@ -14,4 +14,5 @@ const (
 // Global Errors
 var (
 	ErrorGlobalPublicMessage = errors.New("ops, something went wrong")
+	FailedUpdatePassword     = errors.New("failed update password")
 )

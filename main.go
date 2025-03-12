@@ -15,6 +15,7 @@ import (
 
 func main() {
 	defer logger.Log.Sync() // Pastikan log disinkronisasi sebelum aplikasi berakhir
+	defer config.InitProvider()
 
 	//initial database
 	database.Connect()
@@ -26,6 +27,12 @@ func main() {
 	app := fiber.New()
 	// Middleware application
 	middleware.FiberMiddleware(app)
+
+	// Setup Cloudinary client
+	// cld, err := config.SetupCloudinary()
+	// if err != nil {
+	// 	log.Fatalf("Failed to setup Cloudinary: %v", err)
+	// }
 	//Repositories
 	repositories := delivery.NewRepository(database.DB.Db)
 	// Services
