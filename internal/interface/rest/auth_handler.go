@@ -1,8 +1,14 @@
 package rest
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"fmt"
+	"net/http"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/markbates/goth/gothic"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
+
+	"github.com/hudaputrasantosa/auth-users-api/internal/config"
 	dto "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/dtos"
 	authService "github.com/hudaputrasantosa/auth-users-api/internal/domain/auth/services"
 
@@ -25,11 +31,14 @@ func NewHandleAuthRoute(
 	}
 
 	api := router.Group("/api")
-
 	// Auth Member Router Version 1.0
 	memberRouterV1 := api.Group("/v1/member/auth")
 	memberRouterV1.Post("/register", middleware.RateLimit(3, 15, nil), handlerAuth.registerUser)
 	memberRouterV1.Post("/login", middleware.RateLimit(5, 15, nil), handlerAuth.validateUser)
+	memberRouterV1.Get("/:provider", middleware.RateLimit(5, 15, nil), handlerAuth.googleAuthentication)
+	memberRouterV1.Post("/google/v2", middleware.RateLimit(5, 15, nil), handlerAuth.googleAuthenticationV2)
+	memberRouterV1.Post("/:provider/callback", middleware.RateLimit(5, 15, nil), handlerAuth.googleAuthenticationCallback)
+	memberRouterV1.Post("/google/callback/v2", middleware.RateLimit(5, 15, nil), handlerAuth.googleAuthenticationCallbackV2)
 	memberRouterV1.Post("/verification", middleware.RateLimit(3, 15, nil), handlerAuth.verificationUser)
 	memberRouterV1.Post("/verification/resend", middleware.RateLimit(1, 60, nil), handlerAuth.resendVerificationUser)
 	memberRouterV1.Post("/forgot-password", middleware.RateLimit(3, 15, nil), handlerAuth.forgotPassword)
@@ -42,6 +51,52 @@ func NewHandleAuthRoute(
 }
 
 // Handler / Controller Auth Service
+func (h *handleAuth) googleAuthentication(c *fiber.Ctx) error {
+	provider := c.Params("provider")
+	fmt.Println("Auth provider:", provider)
+
+	// Konversi fiber.Ctx ke http.ResponseWriter dan *http.Request
+	req := new(http.Request)
+	fasthttpadaptor.ConvertRequest(c.Context(), req, true)
+	res := &utils.FiberResponseWriter{Ctx: c}
+
+	// Redirect ke halaman login Google
+	gothic.BeginAuthHandler(res, req)
+	return nil
+}
+
+func (h *handleAuth) googleAuthenticationV2(c *fiber.Ctx) error {
+	path := config.ConfigGoogle()
+	url := path.AuthCodeURL("state")
+	return c.Redirect(url)
+}
+
+func (h *handleAuth) googleAuthenticationCallback(c *fiber.Ctx) error {
+	// Konversi fiber.Ctx ke http.ResponseWriter dan *http.Request
+	req := new(http.Request)
+	fasthttpadaptor.ConvertRequest(c.Context(), req, true)
+	res := &utils.FiberResponseWriter{Ctx: c}
+
+	// Ambil user dari callback OAuth
+	user, err := gothic.CompleteUserAuth(res, req)
+	if err != nil {
+		return response.ErrorMessage(c, fiber.StatusUnauthorized, "Failed login", err)
+	}
+
+	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success redirect login", user)
+}
+
+func (h *handleAuth) googleAuthenticationCallbackV2(c *fiber.Ctx) error {
+	token, error := config.ConfigGoogle().Exchange(c.Context(), c.FormValue("code"))
+	if error != nil {
+		return response.ErrorMessage(c, fiber.StatusInternalServerError, "Failed login", error)
+	}
+
+	user := config.GetUserInfo(token.AccessToken)
+
+	return response.SuccessMessageWithData(c, fiber.StatusOK, "Success login", user.Email)
+}
+
 func (h *handleAuth) validateUser(c *fiber.Ctx) error {
 	ctx := c.Context()
 
